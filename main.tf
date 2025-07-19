@@ -41,7 +41,7 @@ resource "google_container_cluster" "autopilot" {
 data "google_client_config" "me" {}
 
 provider "kubernetes" {
-  host  = "https://${google_container_cluster.autopilot.endpoint}"  
+  host  = "https://${google_container_cluster.autopilot.endpoint}"
   token = data.google_client_config.me.access_token
   cluster_ca_certificate = base64decode(
     google_container_cluster.autopilot.master_auth[0].cluster_ca_certificate
@@ -91,9 +91,9 @@ resource "kubernetes_service_v1" "blue" {
 data "google_compute_network_endpoint_group" "blue_neg" {
   provider = google-beta
   # name     = "k8s1-${var.region}-${google_container_cluster.autopilot.name}-blue-neg"
-  name     = "blue-neg"
+  name = "blue-neg"
   # testing only, this should not be manually specified
-  zone     = "us-central1-b"
+  zone = "us-central1-b"
   # region   = var.region
 
   depends_on = [kubernetes_service_v1.blue]
@@ -140,6 +140,18 @@ resource "google_compute_region_network_endpoint_group" "red_neg" {
 }
 
 ############################################
+# Health check for the GKE (‘blue’) backend
+############################################
+resource "google_compute_health_check" "blue_hc" {
+  name = "blue-hc"
+
+  http_health_check {
+    request_path       = "/"
+    port_specification = "USE_SERVING_PORT"
+  }
+}
+
+############################################
 # Backend services (HTTP)
 ############################################
 resource "google_compute_backend_service" "blue_backend" {
@@ -149,6 +161,7 @@ resource "google_compute_backend_service" "blue_backend" {
   load_balancing_scheme = "EXTERNAL"
 
   backend { group = data.google_compute_network_endpoint_group.blue_neg.id }
+  health_checks = [google_compute_health_check.blue_hc.id]
 }
 
 resource "google_compute_backend_service" "red_backend" {
