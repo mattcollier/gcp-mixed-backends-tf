@@ -30,7 +30,7 @@ variable "region" {
 }
 
 variable "zone" {
-  type   = string
+  type    = string
   default = "us-central1-a"
 }
 
@@ -38,7 +38,7 @@ variable "zone" {
 # GKE Autopilot cluster + “blue” service
 ############################################
 resource "google_container_cluster" "autopilot" {
-  name             = "autopilot-demo"
+  name = "autopilot-demo"
   # create a zonal cluster, this simplifies NEG/Backend configuration
   location         = var.zone
   enable_autopilot = true
@@ -96,8 +96,8 @@ resource "kubernetes_service_v1" "blue" {
 # data "google_compute_region_network_endpoint_group" "blue_neg" {
 data "google_compute_network_endpoint_group" "blue_neg" {
   provider = google-beta
-  name = "blue-neg"
-  zone = var.zone
+  name     = "blue-neg"
+  zone     = var.zone
 
   depends_on = [kubernetes_service_v1.blue]
 }
@@ -164,7 +164,7 @@ resource "google_compute_health_check" "blue_hc" {
 
   log_config {
     enable = true
-  }  
+  }
 }
 
 ############################################
@@ -253,8 +253,8 @@ output "red_endpoint" {
 
 # ensure that the health check probes can reach to nodes
 resource "google_compute_firewall" "allow_gcp_hc" {
-  name    = "allow-gcp-healthcheck"
-  network = "default"
+  name      = "allow-gcp-healthcheck"
+  network   = "default"
   direction = "INGRESS"
   priority  = 1000
 
