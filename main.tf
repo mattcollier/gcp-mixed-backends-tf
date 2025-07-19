@@ -250,3 +250,23 @@ output "blue_endpoint" {
 output "red_endpoint" {
   value = "http://${google_compute_global_address.lb_ip.address}/red"
 }
+
+# ensure that the health check probes can reach to nodes
+resource "google_compute_firewall" "allow_gcp_hc" {
+  name    = "allow-gcp-healthcheck"
+  network = "default"
+  direction = "INGRESS"
+  priority  = 1000
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80"]
+  }
+
+  # Official health-check ranges
+  source_ranges = [
+    "35.191.0.0/16",
+    "130.211.0.0/22"
+  ]
+  target_tags = ["gke-${google_container_cluster.autopilot.name}"] # applies to Autopilot nodes
+}
