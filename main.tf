@@ -89,7 +89,8 @@ resource "kubernetes_service_v1" "blue" {
 # Fetch the auto-provisioned NEG after the Service exists
 data "google_compute_region_network_endpoint_group" "blue_neg" {
   provider = google-beta
-  name     = "k8s1-${var.region}-${google_container_cluster.autopilot.name}-blue-neg"
+  # name     = "k8s1-${var.region}-${google_container_cluster.autopilot.name}-blue-neg"
+  name     = "blue-neg"
   region   = var.region
 
   depends_on = [kubernetes_service_v1.blue]
