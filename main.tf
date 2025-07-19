@@ -41,7 +41,9 @@ resource "google_container_cluster" "autopilot" {
   name = "autopilot-demo"
   # create a zonal cluster, this simplifies NEG/Backend configuration
   location         = var.zone
-  enable_autopilot = true
+  # enable_autopilot = true
+  # default mode is VPC_NATIVE with ip-aliasing
+  # autopilot clusters are regional, not zonal.
 }
 
 data "google_client_config" "me" {}
