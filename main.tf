@@ -60,7 +60,7 @@ resource "kubernetes_deployment_v1" "blue" {
         container {
           name  = "blue"
           image = "gcr.io/google-samples/hello-app:1.0"
-          port { container_port = 80 }
+          port { container_port = 8080 }
         }
       }
     }
@@ -79,7 +79,7 @@ resource "kubernetes_service_v1" "blue" {
     selector = { app = "blue" }
     port {
       port        = 80
-      target_port = 80
+      target_port = 8080
       protocol    = "TCP"
     }
     type = "ClusterIP"
@@ -147,7 +147,8 @@ resource "google_compute_health_check" "blue_hc" {
 
   http_health_check {
     request_path       = "/"
-    port_specification = "USE_SERVING_PORT"
+    # port_specification = "USE_SERVING_PORT"
+    port_specification = "8080"
   }
 }
 
