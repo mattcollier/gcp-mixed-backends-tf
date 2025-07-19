@@ -45,6 +45,9 @@ resource "google_container_cluster" "autopilot" {
   # default mode is VPC_NATIVE with ip-aliasing
   # autopilot clusters are regional, not zonal.
   initial_node_count = 1
+  node_config {
+    tags = ["gke-node"]
+  }
 }
 
 data "google_client_config" "me" {}
@@ -276,5 +279,5 @@ resource "google_compute_firewall" "allow_gcp_hc" {
     "35.191.0.0/16",
     "130.211.0.0/22"
   ]
-  target_tags = ["gke-${google_container_cluster.autopilot.name}"] # applies to Autopilot nodes
+  target_tags = ["gke-node"] # applies to Autopilot nodes
 }
