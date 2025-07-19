@@ -179,7 +179,12 @@ resource "google_compute_backend_service" "blue_backend" {
   protocol              = "HTTP"
   load_balancing_scheme = "EXTERNAL"
 
-  backend { group = data.google_compute_network_endpoint_group.blue_neg.id }
+  backend {
+    group                 = data.google_compute_network_endpoint_group.blue_neg.id
+    balancing_mode        = "RATE" # or "CONNECTION"
+    max_rate_per_endpoint = 100    # pick a sensible per-Pod RPS cap    
+  }
+
   health_checks = [google_compute_health_check.blue_hc.id]
 }
 
