@@ -102,7 +102,7 @@ data "google_compute_network_endpoint_group" "blue_neg" {
 */
 
 data "google_compute_network_endpoint_group" "blue_neg" {
-  for_each = toset(google_container_cluster.autopilot.locations)
+  for_each = toset(google_container_cluster.autopilot.location)
 
   name = "${kubernetes_service_v1.blue.metadata[0].name}"
   zone = each.value
