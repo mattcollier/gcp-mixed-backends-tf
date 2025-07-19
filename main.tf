@@ -93,7 +93,7 @@ data "google_compute_network_endpoint_group" "blue_neg" {
   # name     = "k8s1-${var.region}-${google_container_cluster.autopilot.name}-blue-neg"
   name = "blue-neg"
   # testing only, this should not be manually specified
-  zone = "us-central1-b"
+  zone = "us-central1-f"
   # region   = var.region
 
   depends_on = [kubernetes_service_v1.blue]
