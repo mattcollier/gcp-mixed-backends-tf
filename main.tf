@@ -29,12 +29,18 @@ variable "region" {
   default = "us-central1"
 }
 
+variable "zone" {
+  type   = string
+  default = "us-central1-a"
+}
+
 ############################################
 # GKE Autopilot cluster + “blue” service
 ############################################
 resource "google_container_cluster" "autopilot" {
   name             = "autopilot-demo"
-  location         = var.region
+  # create a zonal cluster, this simplifies NEG/Backend configuration
+  location         = var.zone
   enable_autopilot = true
 }
 
@@ -88,25 +94,22 @@ resource "kubernetes_service_v1" "blue" {
 
 # Fetch the auto-provisioned NEG after the Service exists
 # data "google_compute_region_network_endpoint_group" "blue_neg" {
-/*
 data "google_compute_network_endpoint_group" "blue_neg" {
   provider = google-beta
-  # name     = "k8s1-${var.region}-${google_container_cluster.autopilot.name}-blue-neg"
   name = "blue-neg"
-  # testing only, this should not be manually specified
-  zone = "us-central1-f"
-  # region   = var.region
+  zone = var.zone
 
   depends_on = [kubernetes_service_v1.blue]
 }
-*/
 
+/*
 data "google_compute_network_endpoint_group" "blue_neg" {
   for_each = toset(google_container_cluster.autopilot.node_locations)
 
   name = "${kubernetes_service_v1.blue.metadata[0].name}"
   zone = each.value
 }
+*/
 
 ############################################
 # Cloud Run “red” service + serverless NEG
@@ -171,15 +174,9 @@ resource "google_compute_backend_service" "blue_backend" {
   provider              = google-beta
   name                  = "blue-backend"
   protocol              = "HTTP"
-  port_name             = "http"  
-  load_balancing_scheme = "EXTERNAL_MANAGED"
+  load_balancing_scheme = "EXTERNAL"
 
-  dynamic "backend" {
-    for_each = data.google_compute_network_endpoint_group.blue_neg
-    content {
-      group = backend.value.id
-    }
-  }
+  backend { group = data.google_compute_network_endpoint_group.blue_neg.id }
   health_checks = [google_compute_health_check.blue_hc.id]
 }
 
