@@ -48,6 +48,7 @@ resource "google_container_cluster" "autopilot" {
   node_config {
     tags = ["gke-node"]
   }
+  deletion_protection = false
 }
 
 data "google_client_config" "me" {}
