@@ -87,11 +87,11 @@ resource "kubernetes_service_v1" "blue" {
 }
 
 # Fetch the auto-provisioned NEG after the Service exists
-data "google_compute_region_network_endpoint_group" "blue_neg" {
+# data "google_compute_region_network_endpoint_group" "blue_neg" {
+data "google_compute_network_endpoint_group" "blue_neg" {
   provider = google-beta
-  # name     = "k8s1-${var.region}-${google_container_cluster.autopilot.name}-blue-neg"
-  name     = "blue-neg"
-  region   = var.region
+  name     = "k8s1-${var.region}-${google_container_cluster.autopilot.name}-blue-neg"
+  # region   = var.region
 
   depends_on = [kubernetes_service_v1.blue]
 }
@@ -145,7 +145,7 @@ resource "google_compute_backend_service" "blue_backend" {
   protocol              = "HTTP"
   load_balancing_scheme = "EXTERNAL"
 
-  backend { group = data.google_compute_region_network_endpoint_group.blue_neg.id }
+  backend { group = data.google_compute_network_endpoint_group.blue_neg.id }
 }
 
 resource "google_compute_backend_service" "red_backend" {
