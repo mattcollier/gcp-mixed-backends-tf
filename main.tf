@@ -268,7 +268,7 @@ resource "google_compute_firewall" "allow_gcp_hc" {
 
   allow {
     protocol = "tcp"
-    ports    = ["80"]
+    ports    = ["80", "8080"]
   }
 
   # Official health-check ranges
