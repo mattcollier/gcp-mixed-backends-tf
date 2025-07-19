@@ -147,8 +147,13 @@ resource "google_compute_health_check" "blue_hc" {
 
   http_health_check {
     request_path       = "/"
-    port_specification = "USE_SERVING_PORT"
+    # port_specification = "USE_SERVING_PORT"
+    port               = 8080
   }
+
+  log_config {
+    enable = true
+  }  
 }
 
 ############################################
