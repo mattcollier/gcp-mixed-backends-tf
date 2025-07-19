@@ -88,6 +88,7 @@ resource "kubernetes_service_v1" "blue" {
 
 # Fetch the auto-provisioned NEG after the Service exists
 # data "google_compute_region_network_endpoint_group" "blue_neg" {
+/*
 data "google_compute_network_endpoint_group" "blue_neg" {
   provider = google-beta
   # name     = "k8s1-${var.region}-${google_container_cluster.autopilot.name}-blue-neg"
@@ -97,6 +98,14 @@ data "google_compute_network_endpoint_group" "blue_neg" {
   # region   = var.region
 
   depends_on = [kubernetes_service_v1.blue]
+}
+*/
+
+data "google_compute_network_endpoint_group" "blue_neg" {
+  for_each = toset(google_container_cluster.autopilot.locations)
+
+  name = "${kubernetes_service_v1.blue.metadata[0].name}"
+  zone = each.value
 }
 
 ############################################
@@ -147,8 +156,7 @@ resource "google_compute_health_check" "blue_hc" {
 
   http_health_check {
     request_path       = "/"
-    # port_specification = "USE_SERVING_PORT"
-    port               = 8080
+    port_specification = "USE_SERVING_PORT"
   }
 
   log_config {
@@ -163,12 +171,14 @@ resource "google_compute_backend_service" "blue_backend" {
   provider              = google-beta
   name                  = "blue-backend"
   protocol              = "HTTP"
-  load_balancing_scheme = "EXTERNAL"
+  port_name             = "http"  
+  load_balancing_scheme = "EXTERNAL_MANAGED"
 
-  backend {
-    group                 = data.google_compute_network_endpoint_group.blue_neg.id
-    balancing_mode        = "RATE" # or "CONNECTION"
-    max_rate_per_endpoint = 100    # pick a sensible per-Pod RPS cap    
+  dynamic "backend" {
+    for_each = data.google_compute_network_endpoint_group.blue_neg
+    content {
+      group = backend.value.id
+    }
   }
   health_checks = [google_compute_health_check.blue_hc.id]
 }
