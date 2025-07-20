@@ -66,7 +66,7 @@ resource "kubernetes_deployment_v1" "blue" {
   metadata { name = "blue" }
   spec {
     selector { match_labels = { app = "blue" } }
-    replicas = 1
+    replicas = 3
     template {
       metadata { labels = { app = "blue" } }
       spec {
