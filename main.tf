@@ -115,7 +115,7 @@ data "google_compute_network_endpoint_group" "blue_neg" {
 data "google_compute_network_endpoint_group" "blue_neg" {
   for_each = toset(google_container_cluster.autopilot.node_locations)
 
-  name = "blue_neg"
+  name = "blue-neg"
   zone = each.value
 }
 
