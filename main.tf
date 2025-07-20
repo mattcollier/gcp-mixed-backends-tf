@@ -126,6 +126,8 @@ data "google_compute_network_endpoint_group" "blue_neg" {
 
   name = "blue-neg"
   zone = each.value
+
+  depends_on = [kubernetes_service_v1.blue]
 }
 
 ############################################
