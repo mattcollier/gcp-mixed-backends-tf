@@ -38,13 +38,11 @@ variable "zone" {
 # GKE Autopilot cluster + “blue” service
 ############################################
 resource "google_container_cluster" "autopilot" {
-  name = "autopilot-demo"
-  # create a zonal cluster, this simplifies NEG/Backend configuration
-  location = var.zone
-  # enable_autopilot = true
+  name             = "autopilot-demo"
+  location         = var.region
+  enable_autopilot = true
   # default mode is VPC_NATIVE with ip-aliasing
   # autopilot clusters are regional, not zonal.
-  initial_node_count = 1
   node_config {
     tags = ["gke-node"]
   }
@@ -101,6 +99,7 @@ resource "kubernetes_service_v1" "blue" {
 
 # Fetch the auto-provisioned NEG after the Service exists
 # data "google_compute_region_network_endpoint_group" "blue_neg" {
+/*
 data "google_compute_network_endpoint_group" "blue_neg" {
   provider = google-beta
   name     = "blue-neg"
@@ -108,6 +107,7 @@ data "google_compute_network_endpoint_group" "blue_neg" {
 
   depends_on = [kubernetes_service_v1.blue]
 }
+*/
 
 /*
 data "google_compute_network_endpoint_group" "blue_neg" {
@@ -177,6 +177,7 @@ resource "google_compute_health_check" "blue_hc" {
 ############################################
 # Backend services (HTTP)
 ############################################
+/*
 resource "google_compute_backend_service" "blue_backend" {
   provider              = google-beta
   name                  = "blue-backend"
@@ -191,6 +192,7 @@ resource "google_compute_backend_service" "blue_backend" {
 
   health_checks = [google_compute_health_check.blue_hc.id]
 }
+*/
 
 resource "google_compute_backend_service" "red_backend" {
   provider              = google-beta
@@ -210,7 +212,7 @@ resource "google_compute_global_address" "lb_ip" {
 
 resource "google_compute_url_map" "lb_map" {
   name            = "global-map"
-  default_service = google_compute_backend_service.blue_backend.id
+  default_service = google_compute_backend_service.red_backend.id
 
   host_rule {
     hosts        = ["*"]
@@ -219,12 +221,12 @@ resource "google_compute_url_map" "lb_map" {
 
   path_matcher {
     name            = "paths"
-    default_service = google_compute_backend_service.blue_backend.id
+    default_service = google_compute_backend_service.red_backend.id
 
-    path_rule {
-      paths   = ["/blue", "/blue/*"]
-      service = google_compute_backend_service.blue_backend.id
-    }
+    # path_rule {
+    #   paths   = ["/blue", "/blue/*"]
+    #   service = google_compute_backend_service.blue_backend.id
+    # }
 
     path_rule {
       paths   = ["/red", "/red/*"]
