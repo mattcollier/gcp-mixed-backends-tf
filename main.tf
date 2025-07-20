@@ -182,12 +182,14 @@ resource "google_compute_backend_service" "blue_backend" {
   provider              = google-beta
   name                  = "blue-backend"
   protocol              = "HTTP"
-  load_balancing_scheme = "EXTERNAL_MANAGED"
+  load_balancing_scheme = "EXTERNAL"
 
   dynamic "backend" {
     for_each = data.google_compute_network_endpoint_group.blue_neg
     content {
       group = backend.value.id
+      balancing_mode        = "RATE" # or "CONNECTION"
+      max_rate_per_endpoint = 100    # pick a sensible per-Pod RPS cap         
     }
   }
   /*
