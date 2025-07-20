@@ -85,7 +85,7 @@ resource "kubernetes_service_v1" "blue" {
   metadata {
     name = "blue-svc"
     annotations = {
-      "cloud.google.com/neg" = "{\"exposed_ports\":{\"80\":{}}}"
+      "cloud.google.com/neg" = "{\"exposed_ports\":{\"80\":{\"name\":\"blue-neg\"}}}"
     }
   }
   spec {
