@@ -111,14 +111,13 @@ data "google_compute_network_endpoint_group" "blue_neg" {
 }
 */
 
-/*
+
 data "google_compute_network_endpoint_group" "blue_neg" {
   for_each = toset(google_container_cluster.autopilot.node_locations)
 
   name = "${kubernetes_service_v1.blue.metadata[0].name}"
   zone = each.value
 }
-*/
 
 ############################################
 # Cloud Run “red” service + serverless NEG
@@ -179,22 +178,27 @@ resource "google_compute_health_check" "blue_hc" {
 ############################################
 # Backend services (HTTP)
 ############################################
-/*
 resource "google_compute_backend_service" "blue_backend" {
   provider              = google-beta
   name                  = "blue-backend"
   protocol              = "HTTP"
-  load_balancing_scheme = "EXTERNAL"
+  load_balancing_scheme = "EXTERNAL_MANAGED"
 
+  dynamic "backend" {
+    for_each = data.google_compute_network_endpoint_group.blue_neg
+    content {
+      group = backend.value.id
+    }
+  }
+  /*
   backend {
     group                 = data.google_compute_network_endpoint_group.blue_neg.id
     balancing_mode        = "RATE" # or "CONNECTION"
     max_rate_per_endpoint = 100    # pick a sensible per-Pod RPS cap    
   }
-
+  */
   health_checks = [google_compute_health_check.blue_hc.id]
 }
-*/
 
 resource "google_compute_backend_service" "red_backend" {
   provider              = google-beta
