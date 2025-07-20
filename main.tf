@@ -120,6 +120,11 @@ data "google_compute_network_endpoint_group" "blue_neg" {
 #   zone = each.value
 # }
 
+resource "time_sleep" "wait_30s" {
+  depends_on      = [kubernetes_service_v1.blue]
+  create_duration = "30s"
+}
+
 # NOTE: use a static list of zones for a one-shot deployment
 data "google_compute_network_endpoint_group" "blue_neg" {
   for_each = toset(["us-east1-b", "us-east1-c", "us-east1-d"])
@@ -127,7 +132,8 @@ data "google_compute_network_endpoint_group" "blue_neg" {
   name = "blue-neg"
   zone = each.value
 
-  depends_on = [kubernetes_service_v1.blue]
+  # wait for the K8S service to create the NEGs
+  depends_on = [time_sleep.wait_30s]
 }
 
 ############################################
