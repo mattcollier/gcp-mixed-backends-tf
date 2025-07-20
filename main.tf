@@ -231,10 +231,10 @@ resource "google_compute_url_map" "lb_map" {
     name            = "paths"
     default_service = google_compute_backend_service.red_backend.id
 
-    # path_rule {
-    #   paths   = ["/blue", "/blue/*"]
-    #   service = google_compute_backend_service.blue_backend.id
-    # }
+    path_rule {
+      paths   = ["/blue", "/blue/*"]
+      service = google_compute_backend_service.blue_backend.id
+    }
 
     path_rule {
       paths   = ["/red", "/red/*"]
