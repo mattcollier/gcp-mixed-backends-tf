@@ -111,13 +111,14 @@ data "google_compute_network_endpoint_group" "blue_neg" {
 }
 */
 
+# NOTE: this works if the NEG(s) have *already* been auto-created
+# this method can be used in a multi-stage deployment.
+# data "google_compute_network_endpoint_group" "blue_neg" {
+#   for_each = toset(google_container_cluster.autopilot.node_locations)
 
-data "google_compute_network_endpoint_group" "blue_neg" {
-  for_each = toset(google_container_cluster.autopilot.node_locations)
-
-  name = "blue-neg"
-  zone = each.value
-}
+#   name = "blue-neg"
+#   zone = each.value
+# }
 
 ############################################
 # Cloud Run “red” service + serverless NEG
@@ -185,7 +186,12 @@ resource "google_compute_backend_service" "blue_backend" {
   load_balancing_scheme = "EXTERNAL"
 
   dynamic "backend" {
-    for_each = data.google_compute_network_endpoint_group.blue_neg
+    # this will work in a multi-staged deployment
+    # for_each = data.google_compute_network_endpoint_group.blue_neg
+
+    # use static list of zones for a one-shot deployment
+    # network endpoints will be automatically created
+    for_each = toset(["us-east1-b", "us-east1-c", "us-east1-d"])
     content {
       group = backend.value.id
       balancing_mode        = "RATE" # or "CONNECTION"
