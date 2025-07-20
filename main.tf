@@ -120,6 +120,14 @@ data "google_compute_network_endpoint_group" "blue_neg" {
 #   zone = each.value
 # }
 
+# NOTE: use a static list of zones for a one-shot deployment
+data "google_compute_network_endpoint_group" "blue_neg" {
+  for_each = toset(["us-east1-b", "us-east1-c", "us-east1-d"])
+
+  name = "blue-neg"
+  zone = each.value
+}
+
 ############################################
 # Cloud Run “red” service + serverless NEG
 ############################################
@@ -186,12 +194,7 @@ resource "google_compute_backend_service" "blue_backend" {
   load_balancing_scheme = "EXTERNAL"
 
   dynamic "backend" {
-    # this will work in a multi-staged deployment
-    # for_each = data.google_compute_network_endpoint_group.blue_neg
-
-    # use static list of zones for a one-shot deployment
-    # network endpoints will be automatically created
-    for_each = toset(["us-east1-b", "us-east1-c", "us-east1-d"])
+    for_each = data.google_compute_network_endpoint_group.blue_neg
     content {
       group = backend.value.id
       balancing_mode        = "RATE" # or "CONNECTION"
