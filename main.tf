@@ -38,11 +38,13 @@ variable "zone" {
 # GKE Autopilot cluster + “blue” service
 ############################################
 resource "google_container_cluster" "autopilot" {
-  name             = "autopilot-demo"
-  location         = var.region
-  enable_autopilot = true
+  name = "autopilot-demo"
+  # create a zonal cluster, this simplifies NEG/Backend configuration
+  location = var.region
+  # enable_autopilot = true
   # default mode is VPC_NATIVE with ip-aliasing
   # autopilot clusters are regional, not zonal.
+  initial_node_count = 1
   node_config {
     tags = ["gke-node"]
   }
